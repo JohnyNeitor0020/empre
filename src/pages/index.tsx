@@ -342,28 +342,42 @@ const Index = () => {
   ].filter(Boolean);
   
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <FileText className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-              Solicitud de Crédito
-            </h1>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"></div>
+        <div className="absolute inset-0 pattern-dots opacity-40"></div>
+        
+        {/* Floating Shapes */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-success/10 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="relative py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8 animate-in fade-in slide-in-from-top duration-700">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-br from-primary to-primary-light rounded-2xl shadow-lg">
+                <FileText className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold gradient-text">
+                Solicitud de Crédito
+              </h1>
+            </div>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Completa todos los campos para procesar tu solicitud de manera rápida y segura
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            Completa todos los campos para procesar tu solicitud
-          </p>
-        </div>
         
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <ProgressBar currentStep={currentStep} />
-        </div>
+          {/* Progress Bar */}
+          <div className="mb-8 animate-in fade-in slide-in-from-top duration-700 delay-150">
+            <ProgressBar currentStep={currentStep} />
+          </div>
         
-        {/* Form Card */}
-        <div className="bg-card rounded-xl shadow-lg p-6 md:p-8 border border-border">
+          {/* Form Card */}
+          <div className="glass-card rounded-2xl shadow-xl p-6 md:p-10 border border-white/20 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
           {/* Step Content */}
           <div className="min-h-[500px]">
             {currentStep === 0 && (
@@ -464,40 +478,47 @@ const Index = () => {
           </div>
           
           {/* Navigation Buttons */}
-          <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
+          <div className="flex justify-between items-center mt-8 pt-6 border-t border-border/50">
             <Button
               onClick={handlePrevious}
               disabled={currentStep === 0}
               variant="outline"
-              className="gap-2"
+              className="gap-2 px-6 py-6 text-base font-medium hover:scale-105 transition-transform duration-200 disabled:opacity-50 disabled:hover:scale-100"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
               Anterior
             </Button>
             
             {currentStep === STEPS.length - 1 ? (
               <Button
                 onClick={handleSubmit}
-                className="gap-2 bg-gradient-primary"
+                className="gap-2 px-8 py-6 text-base font-semibold bg-gradient-to-r from-primary to-primary-light hover:shadow-lg hover:scale-105 transition-all duration-200"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
                 Enviar Solicitud
               </Button>
             ) : (
               <Button
                 onClick={handleNext}
-                className="gap-2"
+                className="gap-2 px-6 py-6 text-base font-semibold bg-gradient-to-r from-primary to-primary-light hover:shadow-lg hover:scale-105 transition-all duration-200"
               >
                 Siguiente
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
             )}
           </div>
         </div>
+
         
-        {/* Footer Info */}
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>Todos tus datos están protegidos y son confidenciales</p>
+          {/* Footer Info */}
+          <div className="mt-8 text-center animate-in fade-in duration-700 delay-500">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-success/10 rounded-full border border-success/20">
+              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+              <p className="text-sm font-medium text-success-foreground">
+                🔒 Todos tus datos están protegidos y son confidenciales
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
