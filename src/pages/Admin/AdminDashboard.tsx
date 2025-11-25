@@ -12,7 +12,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+
   SidebarProvider,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Building2, Users, UserCog, Route, LayoutDashboard, LogOut, Search } from 'lucide-react';
@@ -97,6 +99,10 @@ export default function AdminDashboard() {
         </Sidebar>
 
         <main className="flex-1 overflow-auto">
+          <div className="p-4 md:hidden border-b flex items-center gap-2">
+            <SidebarTrigger />
+            <span className="font-semibold">Menú</span>
+          </div>
           <div className="container mx-auto p-6">
             {currentView === 'dashboard' && (
               <div>
