@@ -7,6 +7,7 @@ interface ClientesState {
   updateCliente: (id: string, cliente: Partial<Cliente>) => void;
   getCliente: (id: string) => Cliente | undefined;
   searchByCurp: (curp: string) => Cliente[];
+  markAsNoPago: (id: string) => void;
 }
 
 // Mock data
@@ -79,6 +80,8 @@ const mockClientes: Cliente[] = [
         maps: 'https://maps.google.com/?q=19.419482,-99.161427',
       },
     },
+    montoPrestamo: 5000,
+    pagoSemanal: 500,
   },
   {
     id: 'cliente-2',
@@ -95,6 +98,61 @@ const mockClientes: Cliente[] = [
     numero_de_cuenta: '9876543210',
     estado: 'activo',
     promotoraId: '2',
+    direccion: {
+      cp: '06600',
+      colonia: 'Juárez',
+      calle: 'Reforma',
+      numero_ext: '225',
+      ciudad: 'CDMX',
+      cruces: 'Insurgentes y Niza',
+      maps: 'https://maps.google.com/?q=19.427024,-99.167665',
+    },
+    laboral: {
+      empresa: 'Comercializadora SA',
+      puesto: 'Ventas',
+      telefono: '5551112222',
+      direccion: {
+        cp: '11560',
+        colonia: 'Polanco',
+        calle: 'Masaryk',
+        numero_ext: '105',
+        ciudad: 'CDMX',
+        cruces: 'Moliere y Arquimedes',
+        maps: 'https://maps.google.com/?q=19.432608,-99.133209',
+      },
+    },
+    aval: {
+      curp: 'ROGS880520HDFMNT08',
+      nombre_completo: 'Pedro López',
+      parentesco: 'Padre',
+      whatsapp: '5559998877',
+      direccion: {
+        cp: '06600',
+        colonia: 'Juárez',
+        calle: 'Reforma',
+        numero_ext: '225',
+        ciudad: 'CDMX',
+        cruces: 'Insurgentes y Niza',
+        maps: 'https://maps.google.com/?q=19.427024,-99.167665',
+      },
+    },
+    referencia: {
+      curp: 'LOMC920815MDFPRD05',
+      nombre: 'Luisa Martínez',
+      whatsapp: '5557776655',
+      parentesco: 'Prima',
+      direccion: {
+        cp: '06700',
+        colonia: 'Roma',
+        calle: 'Orizaba',
+        numero_ext: '50',
+        ciudad: 'CDMX',
+        cruces: 'Colima y Durango',
+        maps: 'https://maps.google.com/?q=19.419482,-99.161427',
+      },
+    },
+    montoPrestamo: 3000,
+    pagoSemanal: 300,
   },
   {
     id: 'cliente-3',
@@ -111,6 +169,61 @@ const mockClientes: Cliente[] = [
     numero_de_cuenta: '1122334455',
     estado: 'activo',
     promotoraId: '2',
+    direccion: {
+      cp: '06600',
+      colonia: 'Juárez',
+      calle: 'Reforma',
+      numero_ext: '230',
+      ciudad: 'CDMX',
+      cruces: 'Insurgentes y Niza',
+      maps: 'https://maps.google.com/?q=19.427024,-99.167665',
+    },
+    laboral: {
+      empresa: 'Servicios Profesionales',
+      puesto: 'Contador',
+      telefono: '5553334444',
+      direccion: {
+        cp: '11560',
+        colonia: 'Polanco',
+        calle: 'Masaryk',
+        numero_ext: '110',
+        ciudad: 'CDMX',
+        cruces: 'Moliere y Arquimedes',
+        maps: 'https://maps.google.com/?q=19.432608,-99.133209',
+      },
+    },
+    aval: {
+      curp: 'ROGS880520HDFMNT08',
+      nombre_completo: 'Ana Gómez',
+      parentesco: 'Hermana',
+      whatsapp: '5552223344',
+      direccion: {
+        cp: '06600',
+        colonia: 'Juárez',
+        calle: 'Reforma',
+        numero_ext: '230',
+        ciudad: 'CDMX',
+        cruces: 'Insurgentes y Niza',
+        maps: 'https://maps.google.com/?q=19.427024,-99.167665',
+      },
+    },
+    referencia: {
+      curp: 'LOMC920815MDFPRD05',
+      nombre: 'Carlos Ruiz',
+      whatsapp: '5558889900',
+      parentesco: 'Amigo',
+      direccion: {
+        cp: '06700',
+        colonia: 'Roma',
+        calle: 'Orizaba',
+        numero_ext: '55',
+        ciudad: 'CDMX',
+        cruces: 'Colima y Durango',
+        maps: 'https://maps.google.com/?q=19.419482,-99.161427',
+      },
+    },
+    montoPrestamo: 8000,
+    pagoSemanal: 800,
   },
 ];
 
@@ -131,4 +244,16 @@ export const useClientesStore = create<ClientesState>((set, get) => ({
       c.curp.toLowerCase().includes(searchTerm)
     );
   },
+  markAsNoPago: (id) =>
+    set((state) => ({
+      clientes: state.clientes.map((c) =>
+        c.id === id
+          ? {
+            ...c,
+            diasRetraso: (c.diasRetraso || 0) + 7,
+            estado: 'moroso' as const,
+          }
+          : c
+      ),
+    })),
 }));

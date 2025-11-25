@@ -6,7 +6,7 @@ import { usePagosStore } from '@/store/pagosStore';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Building2, LogOut, DollarSign, Users, TrendingUp } from 'lucide-react';
-import { Promotora, TotalesSemanal } from '@/types';
+import { Promotora, TotalesSemanal, MedioPago } from '@/types';
 import ClienteCard from '@/components/promotora/ClienteCard';
 import RegistroPagoDialog from '@/components/promotora/RegistroPagoDialog';
 import ResumenSemanal from '@/components/promotora/ResumenSemanal';
@@ -20,18 +20,22 @@ export default function PromotoraDashboard() {
 
   const [selectedClienteId, setSelectedClienteId] = useState<string | null>(null);
   const [showPagoDialog, setShowPagoDialog] = useState(false);
+  const [defaultMedio, setDefaultMedio] = useState<MedioPago>('efectivo');
+  const [view, setView] = useState<'clientes' | 'reporte'>('clientes');
 
   const clientesAsignados = useMemo(
     () => clientes.filter((c) => user.clientesAsignados.includes(c.id)),
     [clientes, user.clientesAsignados]
   );
 
-  const totalesSemanal = useMemo((): TotalesSemanal => {
-    const pagosSemana = pagos.filter((p) => {
+  const pagosSemana = useMemo(() => {
+    return pagos.filter((p) => {
       const cliente = clientes.find((c) => c.id === p.clienteId);
       return cliente && user.clientesAsignados.includes(cliente.id);
     });
+  }, [pagos, clientes, user.clientesAsignados]);
 
+  const totalesSemanal = useMemo((): TotalesSemanal => {
     const pagosNormalesEfectivo = pagosSemana
       .filter((p) => p.tipo === 'normal' && p.medio === 'efectivo')
       .reduce((sum, p) => sum + p.cantidad, 0);
@@ -59,16 +63,23 @@ export default function PromotoraDashboard() {
       comision,
       total,
     };
-  }, [pagos, clientes, user.clientesAsignados]);
+  }, [pagosSemana]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const handleRegistrarPago = (clienteId: string) => {
+  const handleCobrar = (clienteId: string) => {
     setSelectedClienteId(clienteId);
+    setDefaultMedio('efectivo'); // Default to efectivo, user can change in dialog
     setShowPagoDialog(true);
+  };
+
+  const handleNoPago = (clienteId: string) => {
+    if (window.confirm('¿Estás segura de registrar que este cliente NO pagó? Se marcará con retraso.')) {
+      useClientesStore.getState().markAsNoPago(clienteId);
+    }
   };
 
   return (
@@ -99,67 +110,103 @@ export default function PromotoraDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="p-4 border-l-4 border-l-primary">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Users className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Clientes</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {clientesAsignados.length}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 border-l-4 border-l-success">
-            <div className="flex items-center gap-3">
-              <div className="bg-success/10 p-3 rounded-full">
-                <DollarSign className="h-5 w-5 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Semanal</p>
-                <p className="text-2xl font-bold text-foreground">
-                  ${totalesSemanal.total.toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 border-l-4 border-l-accent bg-accent/5">
-            <div className="flex items-center gap-3">
-              <div className="bg-accent/10 p-3 rounded-full">
-                <TrendingUp className="h-5 w-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Comisión</p>
-                <p className="text-2xl font-bold text-accent">
-                  ${totalesSemanal.comision.toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Resumen Semanal */}
-        <ResumenSemanal totales={totalesSemanal} promotoraNombre={`${user.nombre} ${user.apellidos}`} />
-
-        {/* Clientes List */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4 text-foreground">Mis Clientes</h2>
-          <div className="space-y-3">
-            {clientesAsignados.map((cliente) => (
-              <ClienteCard
-                key={cliente.id}
-                cliente={cliente}
-                onRegistrarPago={() => handleRegistrarPago(cliente.id)}
-              />
-            ))}
+        {/* View Toggle */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-muted p-1 rounded-lg inline-flex">
+            <button
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${view === 'clientes'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
+              onClick={() => setView('clientes')}
+            >
+              Mis Clientes
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${view === 'reporte'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
+              onClick={() => setView('reporte')}
+            >
+              Reporte Semanal
+            </button>
           </div>
         </div>
+
+        {view === 'reporte' && (
+          <>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Card className="p-4 border-l-4 border-l-primary">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Clientes</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {clientesAsignados.length}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-success">
+                <div className="flex items-center gap-3">
+                  <div className="bg-success/10 p-3 rounded-full">
+                    <DollarSign className="h-5 w-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Semanal</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${totalesSemanal.total.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-accent bg-accent/5">
+                <div className="flex items-center gap-3">
+                  <div className="bg-accent/10 p-3 rounded-full">
+                    <TrendingUp className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Comisión</p>
+                    <p className="text-2xl font-bold text-accent">
+                      ${totalesSemanal.comision.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Resumen Semanal */}
+            <ResumenSemanal
+              totales={totalesSemanal}
+              promotoraNombre={`${user.nombre} ${user.apellidos}`}
+              pagos={pagosSemana}
+              clientes={clientes}
+            />
+          </>
+        )}
+
+        {view === 'clientes' && (
+          /* Clientes List */
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Mis Clientes</h2>
+            <div className="space-y-3">
+              {clientesAsignados.map((cliente) => (
+                <ClienteCard
+                  key={cliente.id}
+                  cliente={cliente}
+                  onCobrar={() => handleCobrar(cliente.id)}
+                  onNoPago={() => handleNoPago(cliente.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Registro Pago Dialog */}
@@ -168,6 +215,7 @@ export default function PromotoraDashboard() {
           clienteId={selectedClienteId}
           open={showPagoDialog}
           onOpenChange={setShowPagoDialog}
+          defaultMedio={defaultMedio}
         />
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useClientesStore } from '@/store/clientesStore';
+import { mockUsers } from '@/store/authStore';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,21 +21,31 @@ export default function ClientesView() {
   const [searchCurp, setSearchCurp] = useState('');
   const [limit, setLimit] = useState(10);
   const [selectedClienteId, setSelectedClienteId] = useState<string | null>(null);
+  const [selectedPromotora, setSelectedPromotora] = useState<string>('all');
+
+  const promotoras = useMemo(() => {
+    return mockUsers.filter(u => u.role === 'promotora');
+  }, []);
 
   const filteredClientes = useMemo(() => {
-    if (!searchCurp.trim()) return clientes;
-    const term = searchCurp.toLowerCase();
-    return clientes.filter((c) => c.curp.toLowerCase().includes(term));
-  }, [clientes, searchCurp]);
+    let result = clientes;
+
+    if (selectedPromotora !== 'all') {
+      result = result.filter(c => c.promotoraId === selectedPromotora);
+    }
+
+    if (searchCurp.trim()) {
+      const term = searchCurp.toLowerCase();
+      result = result.filter((c) => c.curp.toLowerCase().includes(term));
+    }
+
+    return result;
+  }, [clientes, searchCurp, selectedPromotora]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-foreground">Clientes</h1>
-        <Button>
-          <span className="mr-2">+</span>
-          Nuevo Cliente
-        </Button>
       </div>
 
       <Card className="p-4 mb-6">
@@ -59,6 +70,19 @@ export default function ClientesView() {
             <option value={100}>Mostrar 100</option>
             <option value={10000}>Mostrar Todos</option>
           </select>
+
+          <select
+            className="h-10 w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            value={selectedPromotora}
+            onChange={(e) => setSelectedPromotora(e.target.value)}
+          >
+            <option value="all">Todas las Promotoras</option>
+            {promotoras.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.nombre} {p.apellidos}
+              </option>
+            ))}
+          </select>
         </div>
       </Card>
 
@@ -67,6 +91,7 @@ export default function ClientesView() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
+              <TableHead>Nota</TableHead>
               <TableHead>CURP</TableHead>
               <TableHead>Nombre Completo</TableHead>
               <TableHead className="text-center">Estado</TableHead>
@@ -78,6 +103,20 @@ export default function ClientesView() {
               <TableRow key={cliente.id}>
                 <TableCell className="font-mono text-sm text-muted-foreground">
                   {cliente.id}
+                </TableCell>
+                <TableCell>
+                  <Input
+                    type="number"
+                    placeholder="Nota"
+                    className="w-20 h-8"
+                    value={cliente.nota || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      useClientesStore.getState().updateCliente(cliente.id, {
+                        nota: val ? Number(val) : undefined
+                      });
+                    }}
+                  />
                 </TableCell>
                 <TableCell className="font-mono">{cliente.curp}</TableCell>
                 <TableCell className="font-medium">{cliente.nombre_completo}</TableCell>

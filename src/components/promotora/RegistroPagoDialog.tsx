@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -35,12 +36,14 @@ interface RegistroPagoDialogProps {
   clienteId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultMedio?: MedioPago;
 }
 
 export default function RegistroPagoDialog({
   clienteId,
   open,
   onOpenChange,
+  defaultMedio = 'efectivo',
 }: RegistroPagoDialogProps) {
   const addPago = usePagosStore((state) => state.addPago);
   const cliente = useClientesStore((state) => state.getCliente(clienteId));
@@ -56,12 +59,22 @@ export default function RegistroPagoDialog({
     resolver: zodResolver(pagoSchema),
     defaultValues: {
       tipo: 'normal',
-      medio: 'efectivo',
+      medio: defaultMedio,
       cantidad: 0,
     },
   });
 
   const tipo = watch('tipo');
+
+  // Calculate penalty when 'no_pago' is selected
+  useEffect(() => {
+    if (tipo === 'no_pago' && cliente) {
+      const penaltyAmount = cliente.pagoSemanal * 1.1112;
+      setValue('cantidad', Number(penaltyAmount.toFixed(2)));
+    } else if (tipo === 'normal') {
+      setValue('cantidad', 0); // Reset or set to default
+    }
+  }, [tipo, cliente, setValue]);
 
   const onSubmit = (data: PagoForm) => {
     const newPago = {
@@ -75,6 +88,12 @@ export default function RegistroPagoDialog({
     };
 
     addPago(newPago);
+
+    // If it's a "no_pago", we also want to update the client status in the store
+    if (data.tipo === 'no_pago') {
+      useClientesStore.getState().markAsNoPago(clienteId);
+    }
+
     toast.success('Pago registrado exitosamente');
     reset();
     onOpenChange(false);
@@ -109,6 +128,23 @@ export default function RegistroPagoDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {tipo === 'no_pago' && (
+            <div className="space-y-2">
+              <Label htmlFor="cantidadPenalty" className="text-destructive">Cargo por No Pago (Incluye 11.12% comisión)</Label>
+              <Input
+                id="cantidadPenalty"
+                type="number"
+                step="0.01"
+                disabled
+                className="bg-destructive/10 text-destructive font-bold"
+                {...register('cantidad', { valueAsNumber: true })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Pago Semanal: ${cliente.pagoSemanal} + 11.12% = ${Number((cliente.pagoSemanal * 1.1112).toFixed(2))}
+              </p>
+            </div>
+          )}
 
           {tipo !== 'no_pago' && (
             <>

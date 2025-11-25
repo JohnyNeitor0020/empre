@@ -13,20 +13,20 @@ const queryClient = new QueryClient();
 
 function PrivateRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { isAuthenticated, user } = useAuthStore();
-  
+
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 }
 
 const App = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isAuthenticated, user } = useAuthStore();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -35,11 +35,18 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route 
-              path="/" 
+            <Route
+              path="/"
               element={
-                isAuthenticated ? <Navigate to="/login" replace /> : <Navigate to="/login" replace />
-              } 
+                isAuthenticated && user ? (
+                  user.role === 'admin' ? <Navigate to="/admin" replace /> :
+                    user.role === 'supervisora' ? <Navigate to="/supervisora" replace /> :
+                      user.role === 'promotora' ? <Navigate to="/promotora" replace /> :
+                        <Navigate to="/login" replace />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
             />
             <Route path="/login" element={<Login />} />
             <Route

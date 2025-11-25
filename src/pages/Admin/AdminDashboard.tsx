@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore, mockUsers } from '@/store/authStore';
 import { useClientesStore } from '@/store/clientesStore';
+import { Card } from '@/components/ui/card';
 import {
   Sidebar,
   SidebarContent,
@@ -84,9 +85,9 @@ export default function AdminDashboard() {
               </div>
               <Button
                 onClick={handleLogout}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="w-full"
+                className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Cerrar Sesión
@@ -100,15 +101,62 @@ export default function AdminDashboard() {
             {currentView === 'dashboard' && (
               <div>
                 <h1 className="text-3xl font-bold mb-6 text-foreground">Dashboard</h1>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Stats cards will go here */}
-                  <p className="text-muted-foreground col-span-3">
-                    Selecciona una opción del menú lateral para comenzar.
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Card className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-blue-100 text-blue-600 rounded-full">
+                        <Users className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Clientes</p>
+                        <h3 className="text-2xl font-bold">{useClientesStore.getState().clientes.length}</h3>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-green-100 text-green-600 rounded-full">
+                        <UserCog className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Promotoras Activas</p>
+                        <h3 className="text-2xl font-bold">
+                          {mockUsers.filter(u => u.role === 'promotora' && u.status === 'active').length}
+                        </h3>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-purple-100 text-purple-600 rounded-full">
+                        <UserCog className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Supervisoras Activas</p>
+                        <h3 className="text-2xl font-bold">
+                          {mockUsers.filter(u => u.role === 'supervisora' && u.status === 'active').length}
+                        </h3>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-orange-100 text-orange-600 rounded-full">
+                        <Route className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Rutas Activas</p>
+                        <h3 className="text-2xl font-bold">1</h3>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               </div>
             )}
-            
+
             {currentView === 'promotoras' && <PromotorasView />}
             {currentView === 'clientes' && <ClientesView />}
             {currentView === 'supervisoras' && <SupervisorasView />}

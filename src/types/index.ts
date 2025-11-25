@@ -7,6 +7,7 @@ export interface UsuarioBase {
   apellidos: string;
   telefono: string;
   role: Role;
+  status?: 'active' | 'suspended' | 'inactive';
 }
 
 export interface Direccion {
@@ -97,6 +98,10 @@ export interface Cliente {
   laboral?: Laboral;
   aval?: Aval;
   referencia?: Referencia;
+  nota?: number;
+  montoPrestamo: number;
+  pagoSemanal: number;
+  diasRetraso?: number;
 }
 
 export type TipoPago = 'normal' | 'no_pago' | 'retardo' | 'renovado' | 'entregado';

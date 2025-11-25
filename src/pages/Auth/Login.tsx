@@ -37,7 +37,7 @@ export default function Login() {
       if (success) {
         const user = useAuthStore.getState().user;
         toast.success('Inicio de sesión exitoso');
-        
+
         // Redirect based on role
         if (user?.role === 'promotora') {
           navigate('/promotora');
@@ -121,7 +121,6 @@ export default function Login() {
             <div className="space-y-1 text-xs text-muted-foreground">
               <p>Admin: admin@emprendedora.com</p>
               <p>Promotora: promotora@emprendedora.com</p>
-              <p>Supervisora: supervisora@emprendedora.com</p>
               <p className="mt-2">Contraseña: demo123</p>
             </div>
           </div>

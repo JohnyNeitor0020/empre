@@ -14,10 +14,11 @@ export const mockUsers: Usuario[] = [
   {
     id: '1',
     email: 'admin@emprendedora.com',
-    nombre: 'María',
-    apellidos: 'González',
+    nombre: 'Israel',
+    apellidos: 'Piedra',
     telefono: '5551234567',
     role: 'admin',
+    status: 'active',
   },
   {
     id: '2',
@@ -29,15 +30,17 @@ export const mockUsers: Usuario[] = [
     rutaId: 'ruta-1',
     clientesAsignados: ['cliente-1', 'cliente-2', 'cliente-3'],
     comision: 8,
+    status: 'active',
   },
   {
     id: '3',
-    email: 'supervisora@emprendedora.com',
+    email: '',
     nombre: 'Carmen',
     apellidos: 'López',
     telefono: '5559876543',
     role: 'supervisora',
     promotoraIds: ['2'],
+    status: 'active',
   },
 ];
 
@@ -49,7 +52,11 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         // Mock authentication
         const user = mockUsers.find((u) => u.email === email);
+
         if (user && password === 'demo123') {
+          if (user.status === 'suspended') {
+            return false; // Deny login if suspended
+          }
           set({ user, isAuthenticated: true });
           return true;
         }

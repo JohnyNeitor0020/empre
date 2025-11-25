@@ -58,7 +58,7 @@ export default function RegistroSupervisoraDialog({
     try {
       // TODO: Implementar lógica de registro con backend
       console.log('Registrando supervisora:', data);
-      
+
       toast.success('Supervisora registrada exitosamente');
       form.reset();
       onOpenChange(false);
